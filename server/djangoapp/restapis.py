@@ -1,57 +1,73 @@
-# Uncomment the imports below before you add the function code
 import requests
 import os
+import urllib.parse
 from dotenv import load_dotenv
 
 load_dotenv()
 
-backend_url = os.getenv(
-    'backend_url', default="http://localhost:3030")
+backend_url = os.getenv('backend_url', default="http://localhost:3030")
 sentiment_analyzer_url = os.getenv(
     'sentiment_analyzer_url',
-    default="http://localhost:5050/")
+    default="http://localhost:5050/"
+)
 
-# def get_request(endpoint, **kwargs):
-# Add code for get requests to back end
+# =========================
+# GET REQUEST (SAFE)
+# =========================
 def get_request(endpoint, **kwargs):
     params = ""
-    if(kwargs):
-        for key,value in kwargs.items():
-            params=params+key+"="+value+"&"
 
-    request_url = backend_url+endpoint+"?"+params
+    if kwargs:
+        for key, value in kwargs.items():
+            params += f"{key}={value}&"
 
-    print("GET from {} ".format(request_url))
+    request_url = backend_url + endpoint + "?" + params
+
+    print(f"GET from {request_url}")
+
     try:
-        # Call get method of requests library with URL and parameters
-        response = requests.get(request_url)
+        response = requests.get(request_url, timeout=10)
         return response.json()
-    except:
-        # If any error occurs
-        print("Network exception occurred")
+
+    except Exception as e:
+        print(f"GET request failed: {e}")
+        return []   # ALWAYS return safe list
 
 
-# def analyze_review_sentiments(text):
-# request_url = sentiment_analyzer_url+"analyze/"+text
-# Add code for retrieving sentiments
+# =========================
+# SENTIMENT ANALYSIS (SAFE)
+# =========================
 def analyze_review_sentiments(text):
-    request_url = sentiment_analyzer_url+"analyze/"+text
+    if not text:
+        return {"sentiment": "neutral"}
+
+    encoded_text = urllib.parse.quote(str(text))
+    request_url = sentiment_analyzer_url + "analyze/" + encoded_text
+
     try:
-        # Call get method of requests library with URL and parameters
-        response = requests.get(request_url)
-        return response.json()
-    except Exception as err:
-        print(f"Unexpected {err=}, {type(err)=}")
-        print("Network exception occurred")
+        response = requests.get(request_url, timeout=10)
+        data = response.json()
+
+        if isinstance(data, dict) and "sentiment" in data:
+            return data
+
+        return {"sentiment": "neutral"}
+
+    except Exception as e:
+        print(f"Sentiment API error: {e}")
+        return {"sentiment": "neutral"}
 
 
-# def post_review(data_dict):
-# Add code for posting review
+# =========================
+# POST REVIEW (SAFE)
+# =========================
 def post_review(data_dict):
-    request_url = backend_url+"/insert_review"
+    request_url = backend_url + "/insert_review"
+
     try:
-        response = requests.post(request_url,json=data_dict)
-        print(response.json())
+        response = requests.post(request_url, json=data_dict, timeout=10)
         return response.json()
-    except:
-        print("Network exception occurred")
+
+    except Exception as e:
+        print(f"POST request failed: {e}")
+        return {"status": 500, "message": "Request failed"}
