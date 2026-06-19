@@ -26,18 +26,27 @@ const Dealerships = require('./dealership');
 
 // ---------------- SEED DATABASE ----------------
 const seedDatabase = async () => {
-  try {
-    await Reviews.deleteMany({});
-    await Reviews.insertMany(reviews_data.reviews);
-
-    await Dealerships.deleteMany({});
-    await Dealerships.insertMany(dealerships_data.dealerships);
-
-    console.log("Database seeded successfully");
-  } catch (error) {
-    console.error("Seeding error:", error);
-  }
-};
+    try {
+      const reviewCount = await Reviews.countDocuments();
+      const dealerCount = await Dealerships.countDocuments();
+  
+      if (reviewCount === 0) {
+        await Reviews.insertMany(reviews_data.reviews);
+        console.log("Reviews seeded");
+      } else {
+        console.log("Reviews already present, skipping seed");
+      }
+  
+      if (dealerCount === 0) {
+        await Dealerships.insertMany(dealerships_data.dealerships);
+        console.log("Dealerships seeded");
+      } else {
+        console.log("Dealerships already present, skipping seed");
+      }
+    } catch (error) {
+      console.error("Seeding error:", error);
+    }
+  };
 
 // Seed after connection is ready
 mongoose.connection.once("open", () => {
@@ -107,9 +116,9 @@ app.get('/fetchDealer/:id', async (req, res) => {
 });
 
 // Insert review
-app.post('/insert_review', express.raw({ type: '*/*' }), async (req, res) => {
-  try {
-    const data = JSON.parse(req.body.toString());
+app.post('/insert_review', async (req, res) => {
+    try {
+      const data = req.body;
 
     const lastReview = await Reviews.findOne().sort({ id: -1 });
     const new_id = lastReview ? lastReview.id + 1 : 1;

@@ -71,3 +71,18 @@ def post_review(data_dict):
     except Exception as e:
         print(f"POST request failed: {e}")
         return {"status": 500, "message": "Request failed"}
+# add_review in views.py to actually check the result
+def add_review(request):
+    if(request.user.is_anonymous == False):
+        data = json.loads(request.body)
+        try:
+            response = post_review(data)
+            if isinstance(response, dict) and response.get("status") == 500:
+                print(f"post_review failed: {response}")
+                return JsonResponse({"status": 401, "message": "Error in posting review"})
+            return JsonResponse({"status": 200})
+        except Exception as e:
+            print(f"add_review exception: {e}")
+            return JsonResponse({"status": 401, "message": "Error in posting review"})
+    else:
+        return JsonResponse({"status": 403, "message": "Unauthorized"})

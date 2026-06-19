@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import "./Dealers.css";
 import "../assets/style.css";
 import Header from '../Header/Header';
@@ -81,9 +82,9 @@ const Dealers = () => {
             <tr key={dealer.id}>
               <td>{dealer.id}</td>
               <td>
-                <a href={`/dealer/${dealer.id}`}>
+                <Link to={`/dealer/${dealer.id}`}>
                   {dealer.full_name}
-                </a>
+                </Link>
               </td>
               <td>{dealer.city}</td>
               <td>{dealer.address}</td>
@@ -92,13 +93,13 @@ const Dealers = () => {
 
               {isLoggedIn && (
                 <td>
-                  <a href={`/postreview/${dealer.id}`}>
+                  <Link to={`/postreview/${dealer.id}`}>
                     <img
                       src={review_icon}
                       className="review_icon"
                       alt="Post Review"
                     />
-                  </a>
+                  </Link>
                 </td>
               )}
             </tr>
