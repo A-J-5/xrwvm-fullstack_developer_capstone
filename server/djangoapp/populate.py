@@ -121,3 +121,4 @@ def initiate():
             year=data['year'],
             dealer_id=1
         )
+        

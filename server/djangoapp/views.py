@@ -4,8 +4,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth import logout, login, authenticate
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
-from datetime import datetime
 import logging
 import json
 
@@ -76,7 +74,7 @@ def registration(request):
     try:
         User.objects.get(username=username)
         username_exist = True
-    except Exception as e:
+    except Exception:
         logger.debug(f"{username} is a new user")
 
     if not username_exist:
@@ -182,10 +180,19 @@ def add_review(request):
         data = json.loads(request.body)
 
         try:
-            post_review(data)
+            response = post_review(data)
+
+            if isinstance(response, dict) and response.get("status") == 500:
+                print(f"post_review failed: {response}")
+                return JsonResponse({
+                    "status": 401,
+                    "message": "Error in posting review"
+                })
+
             return JsonResponse({"status": 200})
 
         except Exception as e:
+            print(f"add_review exception: {e}")
             return JsonResponse({
                 "status": 401,
                 "message": "Error in posting review"
