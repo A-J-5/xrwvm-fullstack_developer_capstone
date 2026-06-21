@@ -72,4 +72,3 @@ def post_review(data_dict):
     except Exception as e:
         print(f"POST request failed: {e}")
         return {"status": 500, "message": "Request failed"}
-        
